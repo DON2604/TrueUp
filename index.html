@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrueUp | AI Powered Commercial Value Assurance</title>
+<link rel="icon" href="assets/pwc-logo.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="pwc-logo" src="assets/pwc-logo.png" alt="PwC">
+    <span class="brand-rule"></span>
+    <div class="brand-text">
+      <strong>TrueUp</strong>
+      <small>AI Powered Commercial Value Assurance</small>
+    </div>
+    <span class="brand-badge">AI-Powered Data Pipeline &mdash; Google Cloud &times; Gemini</span>
+  </div>
+
+  <div class="controls">
+    <label>Input source
+      <select id="sourceSelect">
+        <option value="Contracts">Contracts (PDF, DOC)</option>
+        <option value="Amendments">Amendments</option>
+        <option value="POs">Purchase Orders</option>
+        <option value="Invoices">Invoices</option>
+        <option value="Emails">Emails</option>
+        <option value="ERP Transactions">ERP Transactions</option>
+        <option value="SLA Reports">SLA Reports</option>
+      </select>
+    </label>
+    <label>Vendor
+      <select id="vendorSelect">
+        <option>Vendor A</option><option>Vendor B</option><option>Vendor C</option>
+      </select>
+    </label>
+    <label>Speed
+      <select id="speedSelect">
+        <option value="2">1x (2s / stage)</option>
+        <option value="1">2x (fast)</option>
+        <option value="4">0.5x (slow)</option>
+      </select>
+    </label>
+    <button class="primary" id="startBtn"><span class="play">&#9654;</span> Run flow</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</header>
+
+<main class="app-shell">
+  <section class="diagram-panel">
+    <div class="status-strip">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Idle &mdash; select an input source and run the flow</span>
+      <span class="chip" id="payloadChip">no payload</span>
+      <span id="progressText">0%</span>
+    </div>
+    <div class="progress-track"><div id="progressBar"></div></div>
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="canvas-stage" id="canvasStage">
+        <div class="architecture" id="architecture">
+
+          <svg class="connections" id="connections" viewBox="0 0 1500 820">
+            <defs>
+              <marker id="arrow" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+                <path d="M0,0 L9,4.5 L0,9 z" fill="#8b8b8b"/>
+              </marker>
+              <marker id="arrowLive" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+                <path d="M0,0 L9,4.5 L0,9 z" fill="#D04A02"/>
+              </marker>
+              <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="5" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <path class="link" id="link-extraction"    d="M230 330 H272 V210 H314"/>
+            <path class="link" id="link-orchestrator"  d="M407 447 V545"/>
+            <path class="link" id="link-validator"     d="M952 660 H1000 V614 H1046"/>
+            <path class="link" id="link-segregation"   d="M1136 518 V494 H1300 V476"/>
+            <path class="link" id="link-mapping"       d="M1150 352 H1114"/>
+            <path class="link" id="link-output"        d="M760 223 V196"/>
+
+            <text class="edge-label" x="415" y="500">Unstructured non-sensitive</text>
+            <text class="edge-label" x="415" y="516">parsed data</text>
+            <text class="edge-label" x="962" y="690">Structured data</text>
+
+            <g class="packet" id="packet" opacity="0">
+              <circle r="13" class="packet-halo"/>
+              <circle r="6" class="packet-core"/>
+            </g>
+          </svg>
+
+          <!-- Data sources -->
+          <section class="group sources" id="sources" data-stage="sources">
+            <h2>Data Sources <small>(Per Vendor)</small></h2>
+            <div class="source-list">
+              <button class="source-card is-selected" data-source="Contracts"><i>&#128213;</i><span>Contracts<small>PDF, DOC, etc.</small></span></button>
+              <button class="source-card" data-source="Amendments"><i>&#128216;</i><span>Amendments</span></button>
+              <button class="source-card" data-source="POs"><i>&#128215;</i><span>POs</span></button>
+              <button class="source-card" data-source="Invoices"><i>&#128209;</i><span>Invoices</span></button>
+              <button class="source-card" data-source="Emails"><i>&#9993;</i><span>Emails</span></button>
+              <button class="source-card" data-source="ERP Transactions"><i>&#128451;</i><span>ERP Transactions</span></button>
+              <button class="source-card" data-source="SLA Reports"><i>&#128202;</i><span>SLA Reports</span></button>
+            </div>
+            <p class="note">Supports multiple formats<br>(PDF, DOC, XLSX, EML, images, etc.)</p>
+          </section>
+
+          <!-- 1. Extraction -->
+          <section class="group extraction" id="extraction" data-stage="extraction">
+            <h2><b>1.</b> Extraction &amp; Non-Sensitization</h2>
+            <div class="step-card"><i>&#9729;</i><strong>Google Cloud</strong><small>Centralized storage<br>(Google Cloud Blob Storage)</small></div>
+            <div class="step-card"><i>&#128441;</i><strong>Google Document AI OCR</strong><small>Data extraction</small></div>
+            <div class="step-card"><i>&#128737;</i><strong>Sensitive Data Protection (DLP)</strong><small>Detect, de-identify &amp; tokenize sensitive contract data</small></div>
+          </section>
+
+          <!-- 5. Output -->
+          <section class="group output" id="output" data-stage="output">
+            <h2><b>5.</b> End user view &amp; Output</h2>
+            <div class="output-grid">
+              <div class="step-card out"><strong>Dynamic Dashboards / Reports</strong><i class="lg">&#128200;</i>
+                <ol><li>Value leakage tracking</li><li>SLA performance</li><li>Rebates &amp; discount tracking</li><li>Renewal risks</li><li>Custom reports per vendor</li></ol>
+              </div>
+              <div class="step-card out assistant"><strong>AI-based Analytics System</strong>
+                <em>&ldquo;What rebates are pending for Vendor X?&rdquo;</em>
+                <em>&ldquo;Show SLA breaches this quarter&rdquo;</em>
+                <em>&ldquo;Which contracts are expiring soon?&rdquo;</em>
+              </div>
+              <div class="step-card out"><strong>Conditional Scheduled Jobs &amp; Notifications</strong><i class="lg">&#9201;</i>
+                <ol><li>Automated monitoring</li><li>Scheduled checks &amp; alerts</li><li>Email / Teams notifications</li><li>Powered by Gemini insights</li></ol>
+              </div>
+            </div>
+            <span class="arrival-badge">&#10003; Data delivered</span>
+          </section>
+
+          <!-- 4. Rule based mapping -->
+          <section class="group mapping" id="mapping" data-stage="mapping">
+            <div class="gemini-banner"><span class="spark">&#10022;</span> Gemini</div>
+            <h2><b>4.</b> Rule Based Mapping <small>(Per Vendor)</small></h2>
+            <div class="card-grid four">
+              <div class="step-card"><strong>Rule Creator Agent</strong><i>&#129504;</i><small>Uses Gemini to suggest rules (rebate logic, SLA rules) per vendor configuration</small></div>
+              <div class="step-card"><strong>Generated Rules</strong><i>&#128203;</i><small>Draft rule set generated and versioned for vendor review</small></div>
+              <div class="step-card"><strong>Human Approval</strong><i>&#128100;</i><small>Domain expert approves or modifies suggested rules</small></div>
+              <div class="step-card"><strong>Rule Transpiler Agent</strong><i>&#9881;</i><small>Converts approved rules into formulas or SQL queries</small></div>
+            </div>
+          </section>
+
+          <!-- 2. Orchestrator -->
+          <section class="group orchestrator" id="orchestrator" data-stage="orchestrator">
+            <div class="gemini-banner"><span class="spark">&#10022;</span> Gemini <small>2. Multi-Modal AI Orchestrator</small></div>
+            <div class="card-grid five">
+              <div class="step-card tint-1"><strong>Document Agent Analysis</strong><i>&#128441;</i><small>Extracts text, tables, clauses &amp; key terms</small></div>
+              <div class="step-card tint-2"><strong>Email Intelligence Agent</strong><i>&#128161;</i><small>Extracts commitments, discussion changes &amp; links to contracts</small></div>
+              <div class="step-card tint-3"><strong>Data Reconciliation Agent</strong><i>&#128279;</i><small>Finds related records across invoices, ERP &amp; SLA reports</small></div>
+              <div class="step-card tint-4"><strong>Insight &amp; Reasoning Agent</strong><i>&#129518;</i><small>Identifies value leakage, gaps &amp; anomalies</small></div>
+              <div class="step-card tint-5"><strong>Un-Structured to Structured</strong><i>&#129513;</i><small>Converts extracted context into clean JSON</small></div>
+            </div>
+          </section>
+
+          <!-- 3. Segregation -->
+          <section class="group segregation" id="segregation" data-stage="segregation">
+            <h2><b>3.</b> Secure Data Segregation <small>(each vendor)</small></h2>
+            <div class="pill-row vendor-row">
+              <span data-vendor="Vendor A">&#128193; Vendor A</span>
+              <span data-vendor="Vendor B">&#128193; Vendor B</span>
+              <span data-vendor="Vendor C">&#128193; Vendor C</span>
+            </div>
+            <small class="dim">Individual DB creator &mdash; variable schema</small>
+            <div class="pill-row">
+              <span>&#128273; Secure key gen</span><span>&#128274; Data encryption</span><span>&#129516; Variable schema</span>
+            </div>
+            <div class="db-node">&#128024; <strong>Postgres SQL</strong></div>
+            <span class="corner-tag">Data Isolation Engine</span>
+          </section>
+
+          <!-- JSON validator -->
+          <section class="group validator" id="validator" data-stage="validator">
+            <div class="validator-icons"><i>&#9881;</i><i>&#129302;</i></div>
+            <h2>JSON Validator</h2>
+            <ul>
+              <li>Validates JSON</li><li>Understands context using Gemini</li><li>Checks against schema</li><li>Fills valid data if missing</li>
+            </ul>
+          </section>
+
+        </div>
+      </div>
+
+      <div class="canvas-caption">
+        <b>TrueUp</b> &middot; AI-Powered Data Pipeline &mdash; Google Cloud &times; Gemini
+      </div>
+
+      <div class="zoom-bar">
+        <button id="zoomOut" title="Zoom out">&minus;</button>
+        <span id="zoomLabel">100%</span>
+        <button id="zoomIn" title="Zoom in">+</button>
+        <button id="zoomFit" title="Fit to screen">Fit</button>
+      </div>
+
+      <div class="delivery-toast" id="deliveryToast">
+        <span class="tick">&#10003;</span>
+        <div><strong>Destination reached</strong><small id="toastText">Output delivered</small></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="log-panel">
+    <div class="log-head">
+      <span class="live-dot" id="liveDot"></span><strong>Processing logs</strong>
+      <button id="clearLogs">Clear</button>
+    </div>
+
+    <div class="run-meta">
+      <div><small>RUN ID</small><strong id="runId">&mdash;</strong></div>
+      <div><small>ELAPSED</small><strong id="elapsed">00:00</strong></div>
+      <div><small>STAGE</small><strong id="stageCount">0/7</strong></div>
+    </div>
+
+    <div class="metrics">
+      <div><b id="mFields">0</b><small>fields</small></div>
+      <div><b id="mTokens">0</b><small>tokenized</small></div>
+      <div><b id="mRules">0</b><small>rules</small></div>
+      <div><b id="mRecords">0</b><small>records</small></div>
+    </div>
+
+    <div class="stage-track" id="stageTrack"></div>
+
+    <div class="logs" id="logs">
+      <div class="log-line dim"><time>--:--:--</time><span>Waiting for a new processing run&hellip;</span></div>
+    </div>
+  </aside>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
